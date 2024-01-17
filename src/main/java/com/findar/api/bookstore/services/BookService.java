@@ -18,5 +18,5 @@ public interface BookService {
 
 
 
-    public String deleteBookFromStore(String id);
+    public String deleteBookFromStore(String id) throws BookNotFoundException;
 }

@@ -1,8 +1,9 @@
 package com.findar.api.bookstore.dto.response;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class BookResponse {
+public class BookResponse implements Serializable {
     private String id;
     private String title;
     private String author;

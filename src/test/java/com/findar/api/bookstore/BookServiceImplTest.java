@@ -24,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class BookServiceImplTest {
     @Autowired
     private BookServiceImpl bookService;
+    @Autowired
+    private BookRepository bookRepository;
 @Autowired
     private BookRepository repository;
     @Test
@@ -35,7 +37,7 @@ public class BookServiceImplTest {
 
     @Test
     @DirtiesContext
-    public void testBookCanBeAdded() throws BookAlreadyExistException {
+    void testBookCanBeAdded() throws BookAlreadyExistException {
         //given
         BookRequest request = new BookRequest(
                 "Physics",
@@ -56,7 +58,7 @@ public class BookServiceImplTest {
     }
     @Test
     @DirtiesContext
-    public void testBookAlreadyExistException() throws BookAlreadyExistException {
+    void testBookAlreadyExistException() throws BookAlreadyExistException {
         //given
         BookRequest request = new BookRequest(
                 "Biology",
@@ -159,7 +161,8 @@ public class BookServiceImplTest {
 
     @Test
     @DirtiesContext
-    public void testBooksNotAvailableThrowsNoAvailableBooksException() throws BookAlreadyExistException {
+    void testBooksNotAvailableThrowsNoAvailableBooksException() throws BookAlreadyExistException {
+        //given
         BookRequest request = new BookRequest(
                 "English",
                 "Mercy",
@@ -190,6 +193,44 @@ public class BookServiceImplTest {
         assertThrows(NoAvailableBookException.class, ()->{
             bookService.listAvailableBooks(0,1);
         });
+    }
+
+    @Test
+    @DirtiesContext
+    void testBookCanBeDeletedFromStore() throws BookAlreadyExistException, BookNotFoundException {
+        //given
+        BookRequest request = new BookRequest(
+                "English",
+                "Mercy",
+                "isbn:oiuuyttrt",
+                "textbook",
+                "2010",
+                200.00,
+                0
+
+        );
+
+        BookRequest request1 = new BookRequest(
+                "Maths2",
+                "Joy2",
+                "isbn:oiuuyttrt",
+                "textbook",
+                "2010",
+                200.00,
+                0
+
+        );
+
+        //when
+        BookResponse response = bookService.addBook(request);
+        bookService.addBook(request1);
+        Book book = bookRepository.findByTitle(response.getTitle());
+        String message = bookService.deleteBookFromStore(book.getId());
+
+        //then
+        assertThat(message).isEqualTo(String.format("Book with id %s successfully deleted", book.getId()));
+
+
     }
 
 }
