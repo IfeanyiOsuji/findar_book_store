@@ -5,6 +5,7 @@ import com.findar.api.bookstore.dto.response.BookResponse;
 import com.findar.api.bookstore.entities.Book;
 import com.findar.api.bookstore.exceptions.BookAlreadyExistException;
 import com.findar.api.bookstore.exceptions.BookNotFoundException;
+import com.findar.api.bookstore.exceptions.NoAvailableBookException;
 import com.findar.api.bookstore.repository.BookRepository;
 import com.findar.api.bookstore.services.BookServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Date;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -53,6 +55,7 @@ public class BookServiceImplTest {
 
     }
     @Test
+    @DirtiesContext
     public void testBookAlreadyExistException() throws BookAlreadyExistException {
         //given
         BookRequest request = new BookRequest(
@@ -75,6 +78,7 @@ public class BookServiceImplTest {
 
     }
     @Test
+    @DirtiesContext
     void testBookCanBeUpdated() throws BookNotFoundException {
         //given
         BookRequest request = new BookRequest(
@@ -115,6 +119,77 @@ public class BookServiceImplTest {
         //then
         assertThat(updatedBook).isNotNull();
 
+    }
+
+    @Test
+    @DirtiesContext
+    void testListAvailableBooks() throws BookAlreadyExistException, NoAvailableBookException {
+        //given
+        BookRequest request = new BookRequest(
+                "Maths",
+                "Joy        ",
+                "isbn:oiuuyttrt",
+                "textbook",
+                "2010",
+                200.00,
+                10
+
+        );
+
+        BookRequest request1 = new BookRequest(
+                "Maths1",
+                "Joy1",
+                "isbn:oiuuyttrt",
+                "textbook",
+                "2010",
+                200.00,
+                0
+
+        );
+        bookService.addBook(request);
+        bookService.addBook(request1);
+
+        //when
+        List<BookResponse> books = bookService.listAvailableBooks(0, 1);
+
+        //then
+        assertThat(books.size()).isEqualTo(1);
+
+    }
+
+    @Test
+    @DirtiesContext
+    public void testBooksNotAvailableThrowsNoAvailableBooksException() throws BookAlreadyExistException {
+        BookRequest request = new BookRequest(
+                "English",
+                "Mercy",
+                "isbn:oiuuyttrt",
+                "textbook",
+                "2010",
+                200.00,
+                0
+
+        );
+
+        BookRequest request1 = new BookRequest(
+                "Maths2",
+                "Joy2",
+                "isbn:oiuuyttrt",
+                "textbook",
+                "2010",
+                200.00,
+                0
+
+        );
+
+        //when
+        bookService.addBook(request);
+        bookService.addBook(request1);
+
+        //then
+        assertThrows(NoAvailableBookException.class, ()->{
+            bookService.listAvailableBooks(0,1);
+        });
     }
 
 }
