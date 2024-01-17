@@ -23,12 +23,12 @@ public class ExceptionHandler {
     public Map<String, ErrorResponse> handleInvalidArguments(MethodArgumentNotValidException ex){
         Map<String, ErrorResponse>errorResponse = new HashMap<>();
         Map<String, String>errorMessage = new HashMap<>();
-        ErrorResponse errorResponse1 = new ErrorResponse(ex.getStatusCode().value(), HttpStatus.BAD_REQUEST, ex.getMessage());
-        errorMessage.put("status", ex.getStatusCode().toString());
+        ErrorResponse errorResponse1 = new ErrorResponse(ex.getStatusCode().value(), HttpStatus.BAD_REQUEST, "Validation failed");
         ex.getBindingResult().getFieldErrors().forEach(error->{
             errorMessage.put(error.getField(), error.getDefaultMessage());
         });
         errorResponse1.setErrorFields(errorMessage);
+        errorResponse.put("error", errorResponse1);
         return errorResponse;
     }
 
