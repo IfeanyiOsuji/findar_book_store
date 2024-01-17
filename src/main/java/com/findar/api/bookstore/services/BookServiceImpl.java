@@ -4,6 +4,7 @@ import com.findar.api.bookstore.dto.request.BookRequest;
 import com.findar.api.bookstore.dto.response.BookResponse;
 import com.findar.api.bookstore.entities.Book;
 import com.findar.api.bookstore.exceptions.BookAlreadyExistException;
+import com.findar.api.bookstore.exceptions.BookNotFoundException;
 import com.findar.api.bookstore.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,8 +37,14 @@ public class BookServiceImpl implements BookService{
     }
 
     @Override
-    public BookResponse updateBookDetails(String id, BookRequest request) {
-        return null;
+    public BookResponse updateBookDetails(String id, BookRequest request) throws BookNotFoundException {
+        Optional<Book> optional = bookRepository.findById(id);
+        if(optional.isEmpty()){
+            throw new BookNotFoundException(String.format("Book with id %s does not exist", id));
+        }
+        Book book = mapBookToRequest(optional.get(), request);
+        bookRepository.save(book);
+        return mapBookToResponse(book);
     }
 
     @Override
@@ -69,6 +76,15 @@ public class BookServiceImpl implements BookService{
                 book.getUpdatedAt()
 
         );
+
+    }
+    public Book mapBookToRequest(Book book, BookRequest request) {
+        String title = request.getTitle()==null ? book.getTitle(): request.getTitle();
+        String author = request.getAuthor() == null? book.getAuthor(): request.getAuthor();
+        String isbn = request.getIsbn() == null||request.getIsbn().isEmpty()? book.getIsbn():request.getIsbn();
+        String genre = request.getGenre() == null || request.getGenre().isEmpty()? book.getGenre():request.getGenre();
+        String publicationYear = request.getPublicationYear().length() != 4 ? book.getPublicationYear(): request.getPublicationYear();
+        return new Book(title, author, isbn, genre, publicationYear, request.getPrice(), request.getQuantityInStock(), book.getCreatedAt(), new Date());
 
     }
 }
