@@ -5,6 +5,7 @@ import com.findar.api.bookstore.dto.response.BookResponse;
 import com.findar.api.bookstore.entities.Book;
 import com.findar.api.bookstore.exceptions.BookAlreadyExistException;
 import com.findar.api.bookstore.exceptions.BookNotFoundException;
+import com.findar.api.bookstore.exceptions.NoAvailableBookException;
 import com.findar.api.bookstore.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,7 +13,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService{
@@ -48,8 +51,13 @@ public class BookServiceImpl implements BookService{
     }
 
     @Override
-    public Page<BookResponse> listAvailableBooks(int pageNumber, int pageSize) {
-        return null;
+    public List<BookResponse> listAvailableBooks(int pageNumber, int pageSize) throws NoAvailableBookException {
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+        List<BookResponse> books = bookRepository.findAll(pageRequest).stream().filter(Book::isAvailable).map(this::mapBookToResponse).toList();
+        if(books.isEmpty()){
+            throw new NoAvailableBookException("No available book found");
+        }
+        return books;
     }
 
     @Override
