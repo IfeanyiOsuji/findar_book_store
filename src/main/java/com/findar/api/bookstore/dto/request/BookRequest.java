@@ -4,7 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
-public class BookRequest {
+import java.io.Serializable;
+
+public class BookRequest implements Serializable {
     @NotNull(message ="title should not be null")
     @NotBlank(message = "title should not be empty")
     private String title;

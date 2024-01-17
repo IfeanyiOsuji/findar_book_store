@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService{
-    private BookRepository bookRepository;
+    private final BookRepository bookRepository;
     @Autowired
     public BookServiceImpl(final BookRepository repository){
         this.bookRepository = repository;
@@ -61,8 +61,13 @@ public class BookServiceImpl implements BookService{
     }
 
     @Override
-    public String deleteBookFromStore(String id) {
-        return null;
+    public String deleteBookFromStore(String id) throws BookNotFoundException {
+        Optional<Book> optional = bookRepository.findById(id);
+        if(optional.isEmpty()){
+            throw new BookNotFoundException(String.format("Book with id %s does not exist", id));
+        }
+        bookRepository.delete(optional.get());
+        return String.format("Book with id %s successfully deleted", id);
     }
 
     public String checkBookAvailability() {
